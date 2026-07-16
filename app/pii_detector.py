@@ -3,8 +3,28 @@ from presidio_analyzer import AnalyzerEngine
 import spacy
 import re
 
+<<<<<<< HEAD
 nlp = spacy.load("en_core_web_lg")
 _analyzer = AnalyzerEngine(supported_languages=["en"])
+=======
+<<<<<<< HEAD
+nlp = spacy.load("en_core_web_sm")
+
+# Explicitly tell Presidio to use the SAME small model, instead of
+# silently downloading its own en_core_web_lg internally.
+_nlp_configuration = {
+    "nlp_engine_name": "spacy",
+    "models": [{"lang_code": "en", "model_name": "en_core_web_sm"}],
+}
+_provider = NlpEngineProvider(nlp_configuration=_nlp_configuration)
+_nlp_engine = _provider.create_engine()
+
+_analyzer = AnalyzerEngine(nlp_engine=_nlp_engine, supported_languages=["en"])
+=======
+nlp = spacy.load("en_core_web_lg")
+_analyzer = AnalyzerEngine(supported_languages=["en"])
+>>>>>>> f7d7bf2 (Change)
+>>>>>>> ca355de (Change)
 
 # Entity types treated as catastrophic-if-missed -- used by main.py as a
 # narrow deterministic safety net on top of the sensitivity classifier.
