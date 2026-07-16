@@ -2,7 +2,7 @@
 
 A context-aware PII detection and anonymization middleware for LLM prompts. Instead of flat token redaction (`[PERSON_1]`), it replaces sensitive data with realistic, privacy-safe proxies that preserve sentence structure and semantic relationships — while tracking cumulative re-identification risk across multi-turn conversations.
 
-[Live demo](#) · [Screenshot/GIF here]
+> **Note:** this project currently runs locally. See [Setup](#setup) below to run it on your own machine — a live hosted demo isn't available.
 
 ## What it does
 
@@ -69,6 +69,7 @@ Full failure-mode analysis: [`eval/results/sensitivity_ood.md`](eval/results/sen
 - **In-memory session state**: both the privacy accountant and the reversible-anonymizer token map live in process memory and are lost on restart. Redis/SQLite persistence would be needed for production use.
 - **Mock LLM**: swap `mock_llm()` in `app/main.py` for a real Anthropic/OpenAI client call before using this beyond a demo.
 - **Single shared encryption key**: the reversible anonymizer uses one Fernet key for all sessions — production would need per-user/per-session keys.
+- **Local-only**: this project is designed to run on your own machine. A hosted version isn't currently available (deployment ran into free-tier memory constraints with the full transformer + spaCy + Presidio stack — see `training/train_ner_colab.md` for the ONNX conversion path explored as a fix).
 
 ## Setup
 
@@ -77,27 +78,43 @@ git clone <this-repo>
 cd pii-shield
 python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
-python -m spacy download en_core_web_lg
+python -m spacy download en_core_web_sm
 ```
 
-Train the sensitivity classifier (fast, no GPU needed):
+Place your trained model artifacts in `models/` (see `models/README.md`):
+- `pii-ner-model-final/` — the fine-tuned DistilBERT NER model
+- `sensitivity_clf.pkl`, `sensitivity_vec.pkl` — the sensitivity classifier
+
+Train the sensitivity classifier yourself (fast, no GPU needed):
 ```bash
 cd training && python train_sensitivity.py
 ```
 
 Train the NER model on Colab (GPU) — see [`training/train_ner_colab.md`](training/train_ner_colab.md) for the full notebook, then unzip the result into `models/pii-ner-model-final/`.
 
-Run the API:
+### Run the API
+
 ```bash
-cd app && uvicorn main:app --reload
+cd app
+uvicorn main:app --reload
 ```
 
-Run the demo UI:
+Confirm it's running:
 ```bash
-cd demo && streamlit run streamlit_app.py
+curl http://localhost:8000/health
 ```
 
-Run tests:
+### Run the demo UI (in a separate terminal)
+
+```bash
+cd demo
+streamlit run streamlit_app.py
+```
+
+This opens a browser tab (usually `http://localhost:8501`). Confirm the "API URL" field at the top points to `http://localhost:8000`.
+
+### Run tests
+
 ```bash
 pytest tests/
 ```
@@ -110,6 +127,11 @@ curl -X POST http://localhost:8000/process \
   -d '{"session_id":"s1","prompt":"My SSN is 123-45-6789 and I live in Detroit","policy":"auto","use_reversible":true}'
 ```
 
+Try the multi-turn risk demo by sending these one at a time with the same `session_id`, and watching the risk climb via the Streamlit UI or `GET /session/{session_id}/risk`:
+1. `I am 45 years old`
+2. `I live in zip code 60614`
+3. `I have diabetes`
+
 ## Tech stack
 
 FastAPI · Presidio · spaCy · Hugging Face Transformers (fine-tuned DistilBERT) · scikit-learn · Faker · cryptography (Fernet) · Streamlit
@@ -120,3 +142,4 @@ FastAPI · Presidio · spaCy · Hugging Face Transformers (fine-tuned DistilBERT
 - [ ] Redis-backed session persistence
 - [ ] Reversible multi-modal anonymization (text ↔ image/DICOM token alignment)
 - [ ] Real population-statistics-based risk weights
+- [ ] Revisit hosted deployment (ONNX Runtime conversion or a higher-memory tier)
