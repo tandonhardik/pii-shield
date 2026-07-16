@@ -1,0 +1,19 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.env
+
+# Model weights -- too large for plain git; use Git LFS or Hugging Face Hub instead
+models/pii-ner-model-final/*.bin
+models/pii-ner-model-final/*.safetensors
+models/pii-ner-model-final/pytorch_model.bin
+
+# Data / DB
+*.db
+*.sqlite3
+
+# OS
+.DS_Store
