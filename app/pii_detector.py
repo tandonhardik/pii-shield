@@ -3,7 +3,7 @@ from presidio_analyzer import AnalyzerEngine
 import spacy
 import re
 
-nlp = spacy.load("en_core_web_lg")
+nlp = spacy.load("en_core_web_sm")
 _analyzer = AnalyzerEngine(supported_languages=["en"])
 
 # Entity types treated as catastrophic-if-missed -- used by main.py as a
