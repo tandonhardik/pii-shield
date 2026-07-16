@@ -5,7 +5,8 @@ import joblib
 
 # Point this at either a local path or a Hugging Face Hub repo id, e.g.
 # app/trained_models.py — change NER_MODEL_PATH default
-NER_MODEL_PATH = os.environ.get("NER_MODEL_PATH", "htandon7/pii-ner-distilbert")
+# NER_MODEL_PATH = os.environ.get("NER_MODEL_PATH", "htandon7/pii-ner-distilbert")
+NER_MODEL_PATH = os.environ.get("NER_MODEL_PATH", "../models/pii-ner-model-final")
 SENSITIVITY_CLF_PATH = os.environ.get("SENSITIVITY_CLF_PATH", "../models/sensitivity_clf.pkl")
 SENSITIVITY_VEC_PATH = os.environ.get("SENSITIVITY_VEC_PATH", "../models/sensitivity_vec.pkl")
 
